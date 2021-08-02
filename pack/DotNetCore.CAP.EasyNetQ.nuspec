@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>DotNetCore.CAP.EasyNetQ</id>
+    <version>1.0.0</version>
+    <title>DotNetCore.CAP.EasyNetQ</title>
+    <authors>Kai</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>EasyNetQ Transport For CAP</description>
+    <releaseNotes>
+      1.0.0 EasyNetQ Transport
+    </releaseNotes>
+    <copyright>Kai</copyright>
+    <tags>EasyNetQ CAP</tags>
+    <dependencies>
+      <group targetFramework="netstandard2.1">
+        <dependency id="DotNetCore.CAP" version="5.0.3" />
+        <dependency id="EasyNetQ" version="6.3.1" />
+        <dependency id="Microsoft.Extensions.DependencyInjection" version="5.0.1" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\src\DotNetCore.CAP.EasyNetQ\bin\Debug\netstandard2.1\DotNetCore.CAP.EasyNetQ.dll" target="lib\netstandard2.1\DotNetCore.CAP.EasyNetQ.dll" />
+    <file src="..\src\DotNetCore.CAP.EasyNetQ\bin\Debug\netstandard2.1\DotNetCore.CAP.EasyNetQ.pdb" target="lib\netstandard2.1\DotNetCore.CAP.EasyNetQ.pdb" />
+    <file src="..\src\DotNetCore.CAP.EasyNetQ\bin\Debug\netstandard2.1\DotNetCore.CAP.EasyNetQ.xml" target="lib\netstandard2.1\DotNetCore.CAP.EasyNetQ.xml" />
+  </files>
+</package>
