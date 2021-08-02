@@ -6,6 +6,7 @@
     <title>DotNetCore.CAP.EasyNetQ</title>
     <authors>Kai</authors>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <repository type="git" url="https://github.com/vitry/CAP.EasyNetQ" branch="main" commit="15f9f59475449fb6aeedb4a3d3716e728fb9e689" />
     <description>EasyNetQ Transport For CAP</description>
     <releaseNotes>
       1.0.0 EasyNetQ Transport
