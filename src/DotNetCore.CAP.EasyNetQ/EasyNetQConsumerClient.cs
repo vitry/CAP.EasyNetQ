@@ -4,7 +4,6 @@ using DotNetCore.CAP.Transport;
 using EasyNetQ;
 using EasyNetQ.Consumer;
 using EasyNetQ.Internals;
-using EasyNetQ.Topology;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -69,8 +68,8 @@ namespace DotNetCore.CAP.EasyNetQ
                 var queue = _bus.Advanced.QueueDeclare(
                     subscription.Queue, subscription.QueueSetting, cts.Token);
                 var exchange = _bus.Advanced.ExchangeDeclare(
-                    subscription.Exchange, ExchangeType.Topic, cancellationToken: cts.Token);
-                foreach (var topic in subscription.Topics)
+                    subscription.Exchange, subscription.ExchangeType, cancellationToken: cts.Token);
+                foreach (var topic in subscription.Routes)
                     _bus.Advanced.Bind(exchange, queue, topic, cts.Token);
 
                 IEnumerable<IDisposable> consumers =
@@ -97,7 +96,7 @@ namespace DotNetCore.CAP.EasyNetQ
                     }
                     // append easynetq type info
                     if (properties.TypePresent) headers.Add(EasyNetQHeaders.TYPE, properties.Type);
-                    
+
                     // subscribe by exchange and queue name
                     if (!headers.ContainsKey(Headers.MessageName))
                     {
@@ -197,7 +196,8 @@ namespace DotNetCore.CAP.EasyNetQ
                         .WithExclusive(subscriptionConfig.IsExclusive);
 
                 _subscriptions.Add(new Subscription(subscriptionConfig.QueueName, subscriptionConfig.ExchangeName,
-                    subscriptionConfig.Topics.DefaultIfEmpty("#"), subscriptionConfig.ConsumerCount, queueSetting, consumerSetting));
+                    subscriptionConfig.ExchangeType, subscriptionConfig.Routes,
+                    subscriptionConfig.ConsumerCount, queueSetting, consumerSetting));
             }
         }
     }

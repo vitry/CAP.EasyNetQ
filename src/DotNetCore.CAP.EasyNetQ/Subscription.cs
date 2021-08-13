@@ -6,14 +6,15 @@ namespace DotNetCore.CAP.EasyNetQ
 {
     public class Subscription
     {
-        public Subscription(string queue, string exchange,
-            IEnumerable<string> topics, ushort consumerCount,
+        public Subscription(string queue, string exchange, string exchangeType,
+            IEnumerable<string> routes, ushort consumerCount,
             Action<IQueueDeclareConfiguration> queueSetting,
             Action<IConsumerConfiguration> consumerSetting)
         {
             Queue = queue;
             Exchange = exchange;
-            Topics = topics;
+            ExchangeType = exchangeType;
+            Routes = routes;
             ConsumerCount = consumerCount;
             QueueSetting = queueSetting;
             ConsumerSetting = consumerSetting;
@@ -23,7 +24,9 @@ namespace DotNetCore.CAP.EasyNetQ
 
         public string Exchange { get; }
 
-        public IEnumerable<string> Topics { get; }
+        public string ExchangeType { get; }
+
+        public IEnumerable<string> Routes { get; }
 
         public ushort ConsumerCount { get; }
 

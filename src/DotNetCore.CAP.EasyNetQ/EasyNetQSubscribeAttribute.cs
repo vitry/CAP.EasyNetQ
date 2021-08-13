@@ -1,6 +1,7 @@
 ﻿using DotNetCore.CAP.Internal;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DotNetCore.CAP.EasyNetQ
 {
@@ -8,7 +9,8 @@ namespace DotNetCore.CAP.EasyNetQ
     {
         // name : exchang name
         // group : queue name
-        public EasyNetQSubscribeAttribute(string queueName, string exchangeName, string subscriptionId = "", string[] topics = null)
+        public EasyNetQSubscribeAttribute(string queueName, string exchangeName, string subscriptionId,
+            string[] routes, string exchangeType)
             : base(exchangeName)
         {
             if (string.IsNullOrEmpty(queueName))
@@ -19,18 +21,21 @@ namespace DotNetCore.CAP.EasyNetQ
             this.SubscriptionId = subscriptionId;
             this.QueueName = queueName;
             this.ExchangeName = exchangeName;
-            this.Topics = topics ?? new string[] { };
-
+            this.Routes = routes?.Where(p => !string.IsNullOrEmpty(p)) ?? new string[] { };
+            this.ExchangeType = exchangeType;
             this.Group = this.QueueName;
         }
 
-        public EasyNetQSubscribeAttribute(string queueName, string exchangeName, string subscriptionId = "", string topic = "#")
-            : this(queueName, exchangeName, subscriptionId, new string[] { topic })
+        public EasyNetQSubscribeAttribute(string queueName, string exchangeName, string subscriptionId = "",
+            string route = "#", string exchangeType = EasyNetQ.ExchangeType.TOPIC)
+            : this(queueName, exchangeName, subscriptionId, new string[] { route }, exchangeType)
         {
         }
 
-        public EasyNetQSubscribeAttribute(Type messageType, string subscriptionId = "", string topic = "#")
-            : this(AutoNamingStrategy.GetQueueName(messageType, subscriptionId), AutoNamingStrategy.GetExchangeName(messageType), subscriptionId, topic)
+        public EasyNetQSubscribeAttribute(Type messageType, string subscriptionId = "", 
+            string route = "#", string exchangeType = EasyNetQ.ExchangeType.TOPIC)
+            : this(AutoNamingStrategy.GetQueueName(messageType, subscriptionId),
+                  AutoNamingStrategy.GetExchangeName(messageType), subscriptionId, route, exchangeType)
         {
         }
 
@@ -44,7 +49,9 @@ namespace DotNetCore.CAP.EasyNetQ
 
         public string ExchangeName { get; }
 
-        public IEnumerable<string> Topics { get; }
+        public IEnumerable<string> Routes { get; }
+
+        public string ExchangeType { get; }
 
         #endregion Queue
 
@@ -96,10 +103,10 @@ namespace DotNetCore.CAP.EasyNetQ
                 return expires;
             }
 
-            return new SubscriptionConfig(this.QueueName, this.ExchangeName, this.SubscriptionId)
+            return new SubscriptionConfig(this.QueueName, this.ExchangeName, this.SubscriptionId, this.ExchangeType)
             {
                 ConsumerCount = this.ConsumerCount,
-                Topics = this.Topics,
+                Routes = this.Routes,
                 AutoDelete = this.AutoDelete,
                 Priority = this.Priority,
                 PrefetchCount = this.PrefetchCount,

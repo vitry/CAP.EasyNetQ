@@ -5,14 +5,18 @@ namespace DotNetCore.CAP.EasyNetQ
 {
     public class SubscriptionConfig
     {
-        public SubscriptionConfig(string queueName, string exchangeName, string subscriptionId = "")
+        public SubscriptionConfig(string queueName, string exchangeName, string subscriptionId = "",
+            string exchangeType = EasyNetQ.ExchangeType.TOPIC)
         {
             this.SubscriptionId = subscriptionId;
+            this.ExchangeType = exchangeType;
             this.QueueName = queueName;
             this.ExchangeName = exchangeName;
         }
 
         public string SubscriptionId { get; }
+
+        public string ExchangeType { get; }
 
         public ushort ConsumerCount { get; set; } = 1;
 
@@ -20,12 +24,19 @@ namespace DotNetCore.CAP.EasyNetQ
 
         public string ExchangeName { get; }
 
-        private IEnumerable<string> _topics;
+        private IEnumerable<string> _routes;
 
-        public IEnumerable<string> Topics
+        public IEnumerable<string> Routes
         {
-            get { return _topics; }
-            set { _topics = value?.Where(p => !string.IsNullOrEmpty(p)).ToList() ?? new List<string>(); }
+            get
+            {
+                return ExchangeType switch
+                {
+                    EasyNetQ.ExchangeType.TOPIC => _routes.DefaultIfEmpty("#"),
+                    _ => _routes.DefaultIfEmpty("")
+                };
+            }
+            set { _routes = value ?? new string[] { }; }
         }
 
         public ushort PrefetchCount { get; set; } = 0;

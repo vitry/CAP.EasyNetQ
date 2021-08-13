@@ -31,42 +31,66 @@ namespace DotNetCore.CAP.EasyNetQ
         public IList<SubscriptionInfo> Subscriptions { get; private set; }
 
         public void Subscribe<TMessage, THeaders>(
+            string subscriptionId, Action<TMessage, THeaders> subscribe, string exchangeName, string queueName,
+            Action<SubscriptionConfig> setConfigs = null, string exchangeType = ExchangeType.TOPIC)
+            where THeaders : class
+        {
+            if (subscribe == null) throw new ArgumentNullException(nameof(subscribe));
+            AddSubscription(subscriptionId, exchangeName, queueName, subscribe.GetMethodInfo(), setConfigs, exchangeType);
+        }
+
+        public void Subscribe<TMessage, THeaders>(
             string subscriptionId, Action<TMessage, THeaders> subscribe,
-            Action<SubscriptionConfig> config = null)
+            Action<SubscriptionConfig> setConfigs = null, string exchangeType = ExchangeType.TOPIC)
             where TMessage : class
         {
             if (subscribe == null) throw new ArgumentNullException(nameof(subscribe));
-            AddSubscription(subscriptionId, typeof(TMessage), subscribe.GetMethodInfo(), config);
+            Type messageType = typeof(TMessage);
+            AddSubscription(subscriptionId, AutoNamingStrategy.GetExchangeName(messageType),
+                AutoNamingStrategy.GetQueueName(messageType, subscriptionId), subscribe.GetMethodInfo(), setConfigs, exchangeType);
+        }
+
+        public void Subscribe<TMessage, THeaders>(
+            string subscriptionId, Func<TMessage, THeaders, Task> subscribe, string exchangeName, string queueName,
+            Action<SubscriptionConfig> setConfigs = null, string exchangeType = ExchangeType.TOPIC)
+            where THeaders : class
+        {
+            if (subscribe == null) throw new ArgumentNullException(nameof(subscribe));
+            AddSubscription(subscriptionId, exchangeName, queueName, subscribe.GetMethodInfo(), setConfigs, exchangeType);
         }
 
         public void Subscribe<TMessage, THeaders>(
             string subscriptionId, Func<TMessage, THeaders, Task> subscribe,
-            Action<SubscriptionConfig> config = null)
+            Action<SubscriptionConfig> setConfigs = null, string exchangeType = ExchangeType.TOPIC)
             where TMessage : class
         {
             if (subscribe == null) throw new ArgumentNullException(nameof(subscribe));
-            AddSubscription(subscriptionId, typeof(TMessage), subscribe.GetMethodInfo(), config);
+            Type messageType = typeof(TMessage);
+            AddSubscription(subscriptionId, AutoNamingStrategy.GetExchangeName(messageType),
+                AutoNamingStrategy.GetQueueName(messageType, subscriptionId), subscribe.GetMethodInfo(), setConfigs, exchangeType);
         }
 
-        private void AddSubscription(string subscriptionId, Type messageType, MethodInfo onMessage,
-            Action<SubscriptionConfig> config = null)
+        private void AddSubscription(string subscriptionId, string exchangeName, string queueName, MethodInfo onMessage,
+            Action<SubscriptionConfig> setConfigs = null, string exchangeType = ExchangeType.TOPIC)
         {
             if (string.IsNullOrEmpty(subscriptionId)) subscriptionId = this.SubscriptionId;
-            Subscriptions.Add(new SubscriptionInfo(messageType, subscriptionId)
-            {
-                HandleMethod = onMessage,
-                Config = config
-            });
+            Subscriptions.Add(
+                new SubscriptionInfo(exchangeName, queueName, subscriptionId, exchangeType)
+                {
+                    HandleMethod = onMessage,
+                    SetConfigs = setConfigs
+                });
         }
     }
 
     public class SubscriptionInfo
     {
-        public SubscriptionInfo(Type type, string subscriptionId)
+        public SubscriptionInfo(string exchangeName, string queueName, string subscriptionId, string exchangeType)
         {
             this.SubscriptionId = subscriptionId;
-            this.QueueName = AutoNamingStrategy.GetQueueName(type, subscriptionId);
-            this.ExchangeName = AutoNamingStrategy.GetExchangeName(type);
+            this.ExchangeType = exchangeType;
+            this.QueueName = queueName;
+            this.ExchangeName = exchangeName;
         }
 
         public string QueueName { get; }
@@ -75,10 +99,12 @@ namespace DotNetCore.CAP.EasyNetQ
 
         public string SubscriptionId { get; }
 
-        public string[] Topics { get; set; }
+        public string ExchangeType { get; }
+
+        public string[] Routes { get; set; }
 
         public MethodInfo HandleMethod { get; set; }
 
-        public Action<SubscriptionConfig> Config { get; set; }
+        public Action<SubscriptionConfig> SetConfigs { get; set; }
     }
 }

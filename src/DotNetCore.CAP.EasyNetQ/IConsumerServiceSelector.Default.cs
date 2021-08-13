@@ -42,8 +42,8 @@ namespace DotNetCore.CAP.EasyNetQ
 
             foreach (var info in _options.Value.Subscriptions)
             {
-                var attr = new EasyNetQSubscribeAttribute(info.QueueName, info.ExchangeName, info.SubscriptionId, info.Topics);
-                attr.AppendSubscriptionConfig(info.Config);
+                var attr = new EasyNetQSubscribeAttribute(info.QueueName, info.ExchangeName, info.SubscriptionId, info.Routes, info.ExchangeType);
+                attr.AppendSubscriptionConfig(info.SetConfigs);
                 base.SetSubscribeAttribute(attr);
 
                 var methodInfo = info.HandleMethod;

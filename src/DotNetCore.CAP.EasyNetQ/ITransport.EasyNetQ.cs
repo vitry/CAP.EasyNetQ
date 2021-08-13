@@ -2,7 +2,6 @@
 using DotNetCore.CAP.Messages;
 using DotNetCore.CAP.Transport;
 using EasyNetQ;
-using EasyNetQ.Topology;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
@@ -32,7 +31,7 @@ namespace DotNetCore.CAP.EasyNetQ
             {
                 // todo: add cancel token
                 var exchange = await _bus.Advanced.ExchangeDeclareAsync(
-                    message.GetName(), ExchangeType.Topic).ConfigureAwait(false);
+                    message.GetName(), message.GetExchangeType()).ConfigureAwait(false);
 
                 var properties = new MessageProperties();
                 if (message.Headers.ContainsKey(EasyNetQHeaders.PRIORITY))
@@ -43,7 +42,7 @@ namespace DotNetCore.CAP.EasyNetQ
                 properties.Headers = message.GetHeaders();
 
                 // todo: add cancel token
-                await _bus.Advanced.PublishAsync(exchange, message.GetTopic(), false, properties, message.Body)
+                await _bus.Advanced.PublishAsync(exchange, message.GetRoute(), false, properties, message.Body)
                     .ConfigureAwait(false);
 
                 _logger.LogDebug($"EasyNetQ message [{message.GetName()}] {message.GetId()} has been published.");
